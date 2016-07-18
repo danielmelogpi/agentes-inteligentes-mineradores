@@ -7,16 +7,17 @@
 model Experimento1 
 
 global {
-	int num_explorador <- 20;
+	int num_explorador <- 30;
 	int num_base <- 1;
 	init {
 		create explorador number: num_explorador;
+		create base_central number: num_base;
 	}
 }
 
 species explorador {
 	
-	float size <- 1.0 ;
+	float size <- 0.5 ;
 	rgb color <- #blue;
 	vegetation_cell myCell <- one_of (vegetation_cell) ; 
 	list<vegetation_cell> minerios_encontados;
@@ -36,19 +37,12 @@ species explorador {
 
 }
 
-species base_central {
-	rgb color <- #red;
-	float size <- 5.0 ;
-	
-	aspect base {
-		draw  circle(size) color: color;
-	}
-}
 
-grid vegetation_cell width: 50 height: 50 neighbours: 4 {
-	
-	float hasMinerio <- rnd(1000);
-	rgb color <- (hasMinerio > 950)? #yellow: #black ;
+
+grid vegetation_cell width: 100 height: 100 neighbours: 5 {
+	float hasMinerio <- rnd(100);
+	float hasObstaculo <- rnd(100);
+	rgb color <- (hasObstaculo >= 95)? #red: ((hasMinerio >= 99)? #yellow: #lightgreen) ;
 	
 //	float maxFood <- 1.0 ;
 //	float foodProd <- (rnd(1000) / 1000) * 0.01 ;
@@ -57,12 +51,27 @@ grid vegetation_cell width: 50 height: 50 neighbours: 4 {
 	list<vegetation_cell> vizinhos  <- (self neighbours_at 1);
 }
 
+
+species base_central {
+	rgb color <- #purple;
+	float size <- 100 ;
+	vegetation_cell myCell <- one_of (vegetation_cell) ; 
+	
+	init {
+		location <- myCell.location;
+	}
+	
+	aspect base {
+		draw  circle(size) color: color;
+	}
+}
+
 experiment experimento type: gui {
 	
 	parameter "Numero de exploradores: " var: num_explorador min: 1 max: 100 category: "explorador" ;
 	output {
 		display main_display {
-			grid vegetation_cell lines: #black ;
+			grid vegetation_cell lines: #grey ;
 			species explorador aspect: base ;
 		}
 	}
