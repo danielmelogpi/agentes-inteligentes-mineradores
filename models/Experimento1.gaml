@@ -10,25 +10,30 @@ global {
 	int num_explorador <- 30;
 	int num_base <- 1;
 	init {
-		create explorador number: num_explorador;
 		create base_central number: num_base;
+		create explorador number: num_explorador;
 	}
 }
 
 species explorador {
-	
 	float size <- 0.5 ;
 	rgb color <- #blue;
-	vegetation_cell myCell <- one_of (vegetation_cell) ; 
+	base_central b_central <- one_of(base_central);
+	vegetation_cell myCell <- one_of (vegetation_cell); 
 	list<vegetation_cell> minerios_encontados;
 	
 	init {
-		location <- myCell.location;
+		location <- b_central.location;
+		myCell <- b_central.myCell;
 	}
 	
 	reflex mover {
-		myCell <- one_of(myCell.vizinhos);
-		location <- myCell.location;
+		vegetation_cell newCell <- one_of(myCell.vizinhos);
+		if (not(newCell.hasMinerio)) { 
+			location <- myCell.location;
+		} else {
+			write "new cell has ore / obstacle " + newCell.hasMinerio + " " + newCell.hasObstaculo;
+		}
 	}
 		
 	aspect base {
@@ -37,12 +42,33 @@ species explorador {
 
 }
 
+species base_central {
+	rgb base_color <- #purple;
+	float base_size <- 6 ;
+	vegetation_cell myCell <- one_of(vegetation_cell at_distance 0.1 ) ; 
+	point field_center <- point (50, 50);
+	
+	init {
+		location <- field_center;
+		write "base cell is " + myCell.location.x + " , " + myCell.location.y;
+	}
+	
+	aspect base {
+		draw  rectangle(base_size, base_size) color: #white;
+		draw rectangle(base_size * 0.6, base_size * 0.6) color: #lightblue;
+	}
+}
 
 
-grid vegetation_cell width: 100 height: 100 neighbours: 5 {
-	float hasMinerio <- rnd(100);
-	float hasObstaculo <- rnd(100);
-	rgb color <- (hasObstaculo >= 95)? #red: ((hasMinerio >= 99)? #yellow: #lightgreen) ;
+grid vegetation_cell width: 50 height: 50 neighbours: 5 {
+	bool proxCentro  <- (self.location distance_to point(50,50)) < 10;
+	
+	int hasMinerioChance <- rnd(100);
+	int hasObstaculoChance <- rnd(100);
+	bool hasObstaculo <- not proxCentro and (hasObstaculoChance >= 92);
+	bool hasMinerio <-  not proxCentro and not (hasObstaculo) and (hasMinerioChance >= 99);
+	
+	rgb color <- hasObstaculo ? #brown: (hasMinerio? #yellow: #lightgreen) ;
 	
 //	float maxFood <- 1.0 ;
 //	float foodProd <- (rnd(1000) / 1000) * 0.01 ;
@@ -52,20 +78,6 @@ grid vegetation_cell width: 100 height: 100 neighbours: 5 {
 }
 
 
-species base_central {
-	rgb color <- #purple;
-	float size <- 100 ;
-	vegetation_cell myCell <- one_of (vegetation_cell) ; 
-	
-	init {
-		location <- myCell.location;
-	}
-	
-	aspect base {
-		draw  circle(size) color: color;
-	}
-}
-
 experiment experimento type: gui {
 	
 	parameter "Numero de exploradores: " var: num_explorador min: 1 max: 100 category: "explorador" ;
@@ -73,6 +85,7 @@ experiment experimento type: gui {
 		display main_display {
 			grid vegetation_cell lines: #grey ;
 			species explorador aspect: base ;
+			species base_central aspect: base;
 		}
 	}
 	
