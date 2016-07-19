@@ -19,8 +19,8 @@ species explorador {
 	float size <- 0.5 ;
 	rgb color <- #blue;
 	base_central b_central <- one_of(base_central);
-	vegetation_cell myCell <- one_of (vegetation_cell); 
-	list<vegetation_cell> minerios_encontados;
+	territorio myCell <- one_of (territorio); 
+	list<territorio> minerios_encontados;
 	
 	init {
 		location <- b_central.location;
@@ -28,7 +28,7 @@ species explorador {
 	}
 	
 	reflex mover {
-		vegetation_cell newCell <- one_of(myCell.vizinhos);
+		territorio newCell <- one_of(myCell.vizinhos);
 		if (not(newCell.hasMinerio)) { 
 			location <- myCell.location;
 		} else {
@@ -45,7 +45,7 @@ species explorador {
 species base_central {
 	rgb base_color <- #purple;
 	float base_size <- 6 ;
-	vegetation_cell myCell <- one_of(vegetation_cell at_distance 0.1 ) ; 
+	territorio myCell <- one_of(territorio at_distance 0.1 ) ; 
 	point field_center <- point (50, 50);
 	
 	init {
@@ -60,7 +60,7 @@ species base_central {
 }
 
 
-grid vegetation_cell width: 50 height: 50 neighbours: 5 {
+grid territorio width: 50 height: 50 neighbours: 5 {
 	bool proxCentro  <- (self.location distance_to point(50,50)) < 10;
 	
 	int hasMinerioChance <- rnd(100);
@@ -74,7 +74,7 @@ grid vegetation_cell width: 50 height: 50 neighbours: 5 {
 //	float foodProd <- (rnd(1000) / 1000) * 0.01 ;
 //	float food <- (rnd(1000) / 1000) max: maxFood update: food + foodProd ;
 //	rgb color <- rgb(int(255 * (1 - food)), 255, int(255 * (1 - food))) update: rgb(int(255 * (1 - food)), 255, int(255 *(1 - food))) ;
-	list<vegetation_cell> vizinhos  <- (self neighbours_at 1);
+	list<territorio> vizinhos  <- (self neighbours_at 1);
 }
 
 
@@ -83,7 +83,7 @@ experiment experimento type: gui {
 	parameter "Numero de exploradores: " var: num_explorador min: 1 max: 100 category: "explorador" ;
 	output {
 		display main_display {
-			grid vegetation_cell lines: #grey ;
+			grid territorio lines: #grey ;
 			species explorador aspect: base ;
 			species base_central aspect: base;
 		}
