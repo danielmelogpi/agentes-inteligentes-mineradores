@@ -19,21 +19,28 @@ species explorador {
 	float size <- 0.5 ;
 	rgb color <- #blue;
 	base_central b_central <- one_of(base_central);
-	territorio myCell <- one_of (territorio); 
+	territorio e_cell <- one_of (territorio); 
 	list<territorio> minerios_encontados;
 	
 	init {
 		location <- b_central.location;
-		myCell <- b_central.myCell;
+		e_cell <- b_central.b_cell;
 	}
 	
 	reflex mover {
-		territorio newCell <- one_of(myCell.vizinhos);
-		if (not(newCell.hasMinerio)) { 
-			location <- myCell.location;
-		} else {
-			write "new cell has ore / obstacle " + newCell.hasMinerio + " " + newCell.hasObstaculo;
+		territorio newCell <- one_of(e_cell.vizinhos);
+		
+		if (not(newCell.hasMinerio) and not (newCell.hasObstaculo)) { 
+			e_cell <- newCell;
+			location <- e_cell.location;
+		} 
+		
+		if (newCell.hasMinerio) {
+			add newCell to: minerios_encontados;
+			write "o poderoso "+ name + " encontrar much gold! (" 
+				+ newCell.location.x + ", " + newCell.location.y + ")";
 		}
+		
 	}
 		
 	aspect base {
@@ -45,12 +52,14 @@ species explorador {
 species base_central {
 	rgb base_color <- #purple;
 	float base_size <- 6 ;
-	territorio myCell <- one_of(territorio at_distance 0.1 ) ; 
+	territorio b_cell <- one_of(territorio at_distance 0.1 ) ; 
 	point field_center <- point (50, 50);
 	
 	init {
 		location <- field_center;
-		write "base cell is " + myCell.location.x + " , " + myCell.location.y;
+		b_cell <- one_of(territorio at_distance 0.1 ) ;
+		location <- b_cell.location;
+		write "base cell is " + b_cell.location.x + " , " + b_cell.location.y;
 	}
 	
 	aspect base {
@@ -59,8 +68,7 @@ species base_central {
 	}
 }
 
-
-grid territorio width: 50 height: 50 neighbours: 5 {
+grid territorio width: 50 height: 50 neighbours: 4 {
 	bool proxCentro  <- (self.location distance_to point(50,50)) < 10;
 	
 	int hasMinerioChance <- rnd(100);
@@ -76,7 +84,6 @@ grid territorio width: 50 height: 50 neighbours: 5 {
 //	rgb color <- rgb(int(255 * (1 - food)), 255, int(255 * (1 - food))) update: rgb(int(255 * (1 - food)), 255, int(255 *(1 - food))) ;
 	list<territorio> vizinhos  <- (self neighbours_at 1);
 }
-
 
 experiment experimento type: gui {
 	
